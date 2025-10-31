@@ -6,7 +6,7 @@ let canvasWidth = 800;
         let ctx;
         let widthInBlocks;
         let heightInBlocks;
-        let delay = 140;
+        let delay = 160;
         const minDelay = 30;
         let score = 0;
         let highScore = localStorage.getItem('snakeHighScore') || 0;
