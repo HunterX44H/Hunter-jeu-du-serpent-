@@ -25,6 +25,97 @@
             padding: 10px;
         }
 
+        /* Écran de démarrage */
+        #startScreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+
+        #startScreen.hidden {
+            display: none;
+        }
+
+        .start-title {
+            font-size: clamp(2.5em, 8vw, 4.5em);
+            margin-bottom: 20px;
+            animation: pulse 2s infinite;
+            text-shadow: 3px 3px 10px rgba(0, 0, 0, 0.5);
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .instructions-box {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(15px);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 500px;
+            margin: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .instructions-box h2 {
+            font-size: 1.8em;
+            margin-bottom: 20px;
+            text-align: center;
+            color: #ffd700;
+        }
+
+        .instruction-item {
+            display: flex;
+            align-items: center;
+            margin: 15px 0;
+            font-size: 1.1em;
+        }
+
+        .instruction-icon {
+            font-size: 2em;
+            margin-right: 15px;
+            min-width: 40px;
+            text-align: center;
+        }
+
+        .start-prompt {
+            text-align: center;
+            margin-top: 30px;
+            font-size: 1.3em;
+            animation: blink 1.5s infinite;
+            color: #ffd700;
+            font-weight: bold;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        .game-rules {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 2px solid rgba(255, 255, 255, 0.3);
+            text-align: center;
+            font-size: 0.95em;
+            line-height: 1.6;
+        }
+
+        .game-rules strong {
+            color: #ffd700;
+        }
+
         .game-container {
             text-align: center;
             max-width: 100%;
@@ -120,12 +211,77 @@
             .controls p {
                 font-size: 0.8em;
             }
+
+            .start-title {
+                font-size: 2em;
+            }
+
+            .instructions-box {
+                padding: 20px;
+                max-width: 400px;
+            }
+
+            .instructions-box h2 {
+                font-size: 1.4em;
+            }
+
+            .instruction-item {
+                font-size: 0.95em;
+                margin: 10px 0;
+            }
+
+            .start-prompt {
+                font-size: 1.1em;
+                margin-top: 15px;
+            }
         }
     </style>
 </head>
 <body>
+    <!-- Écran de démarrage -->
+    <div id="startScreen">
+        <div class="start-title">🐍 SNAKE GAME 🐍</div>
+        
+        <div class="instructions-box">
+            <h2>Comment jouer ?</h2>
+            
+            <div id="pcInstructions">
+                <div class="instruction-item">
+                    <span class="instruction-icon">⌨️</span>
+                    <span><strong>Flèches directionnelles</strong> pour diriger le serpent</span>
+                </div>
+                <div class="instruction-item">
+                    <span class="instruction-icon">⏸️</span>
+                    <span><strong>Espace</strong> pour mettre en pause</span>
+                </div>
+            </div>
+
+            <div id="mobileInstructions" style="display: none;">
+                <div class="instruction-item">
+                    <span class="instruction-icon">👉</span>
+                    <span><strong>Glissez votre doigt</strong> pour changer de direction</span>
+                </div>
+                <div class="instruction-item">
+                    <span class="instruction-icon">👆</span>
+                    <span><strong>Double-tap</strong> pour mettre en pause</span>
+                </div>
+            </div>
+
+            <div class="game-rules">
+                <p>🍎 Mangez les pommes pour grandir</p>
+                <p>⚡ Le jeu accélère à chaque pomme</p>
+                <p>💀 Évitez les murs et votre propre corps</p>
+                <p><strong>Objectif :</strong> Faire le meilleur score !</p>
+            </div>
+        </div>
+
+        <div class="start-prompt" id="startPrompt">
+            Appuyez sur ESPACE pour commencer
+        </div>
+    </div>
+
     <div class="game-container">
-        <h1>🐍 SNAKE GAME 🐍</h1>
+        <h1>🐍 Hunter SNAKE GAME 🐍</h1>
         <div class="score-container">
             <h2>Score</h2>
             <div class="score-value" id="scoreDisplay">0</div>

@@ -1,20 +1,19 @@
 let canvasWidth = 800;
-let canvasHeight = 600;
+        let canvasHeight = 600;
         const blockSize = 20;
         let snake;
         let apple;
         let ctx;
         let widthInBlocks;
         let heightInBlocks;
-        let delay = 100;
+        let delay = 150;
         const minDelay = 50;
         let score = 0;
-    // stocker highScore comme number pour éviter les comparaisons chaîne/number
-    let highScore = parseInt(localStorage.getItem('snakeHighScore'), 10) || 0;
+        let highScore = localStorage.getItem('snakeHighScore') || 0;
         let isPaused = false;
-    let isGameOver = false;
         let gameInterval = null;
         let controlMode = null;
+        let gameStarted = false;
 
         // Variables pour le swipe
         let touchStartX = 0;
@@ -36,10 +35,41 @@ let canvasHeight = 600;
 
         window.onload = function() {
             controlMode = detectDevice();
-            startGame();
+            
+            // Adapter l'affichage selon le type d'appareil
+            if (controlMode === 'swipe') {
+                document.getElementById('pcInstructions').style.display = 'none';
+                document.getElementById('mobileInstructions').style.display = 'block';
+                document.getElementById('startPrompt').textContent = 'Double-tapez pour commencer';
+            }
+
+            // Attendre que l'utilisateur démarre le jeu
+            if (controlMode === 'keyboard') {
+                document.addEventListener('keydown', function startWithKeyboard(e) {
+                    if (e.key === ' ' && !gameStarted) {
+                        e.preventDefault();
+                        document.removeEventListener('keydown', startWithKeyboard);
+                        startGame();
+                    }
+                });
+            } else {
+                let lastTap = 0;
+                document.getElementById('startScreen').addEventListener('touchstart', function startWithTouch(e) {
+                    const currentTime = new Date().getTime();
+                    const tapLength = currentTime - lastTap;
+                    if (tapLength < 300 && tapLength > 0 && !gameStarted) {
+                        document.getElementById('startScreen').removeEventListener('touchstart', startWithTouch);
+                        startGame();
+                    }
+                    lastTap = currentTime;
+                });
+            }
         };
 
         function startGame() {
+            gameStarted = true;
+            document.getElementById('startScreen').classList.add('hidden');
+
             // Adapter le canvas à la taille d'écran
             if (window.innerWidth < 850) {
                 canvasWidth = Math.min(window.innerWidth - 40, 600);
@@ -55,7 +85,7 @@ let canvasHeight = 600;
                     '⌨️ <strong>Flèches</strong> pour diriger • <strong>Espace</strong> pour pause';
             } else if (controlMode === 'swipe') {
                 document.getElementById('controlInfo').innerHTML = 
-                    '👉 <strong>Glissez</strong> pour changer de direction • <strong>Touchez</strong> pour pause';
+                    '👉 <strong>Glissez</strong> pour changer de direction • <strong>Double-tap</strong> pour pause';
             }
 
             init();
@@ -82,10 +112,6 @@ let canvasHeight = 600;
 
             setupControls();
             startGameLoop();
-
-            // Gérer le redimensionnement de la fenêtre de manière réactive
-            // On pause brièvement, recalcule les dimensions et ajuste les positions
-            window.addEventListener('resize', handleResize);
         }
 
         function setupControls() {
@@ -180,50 +206,6 @@ let canvasHeight = 600;
             gameInterval = setInterval(gameLoop, delay);
         }
 
-        function handleResize() {
-            // Sauvegarde de l'état pause courant
-            const wasPaused = isPaused;
-            isPaused = true;
-
-            // Adapter le canvas comme au démarrage (mêmes règles)
-            if (window.innerWidth < 850) {
-                canvasWidth = Math.min(window.innerWidth - 40, 600);
-                canvasHeight = Math.min(window.innerHeight - 250, 450);
-            } else {
-                canvasWidth = 800;
-                canvasHeight = 600;
-            }
-
-            widthInBlocks = Math.floor(canvasWidth / blockSize);
-            heightInBlocks = Math.floor(canvasHeight / blockSize);
-
-            const canvas = document.getElementById('gameCanvas');
-            canvas.width = canvasWidth;
-            canvas.height = canvasHeight;
-
-            // On s'assure que chaque segment du serpent reste dans la grille
-            if (snake && snake.body) {
-                for (let i = 0; i < snake.body.length; i++) {
-                    snake.body[i][0] = Math.min(Math.max(0, snake.body[i][0]), widthInBlocks - 1);
-                    snake.body[i][1] = Math.min(Math.max(0, snake.body[i][1]), heightInBlocks - 1);
-                }
-            }
-
-            // Si la pomme est hors limites, on la replace
-            if (apple) {
-                const [ax, ay] = apple.position;
-                if (ax < 0 || ax >= widthInBlocks || ay < 0 || ay >= heightInBlocks) {
-                    apple.position = getRandomPosition();
-                }
-            }
-
-            // Redessine immédiatement
-            draw();
-
-            // Restaure l'état pause précédent
-            isPaused = wasPaused;
-        }
-
         function gameLoop() {
             if (isPaused) return;
 
@@ -278,9 +260,6 @@ let canvasHeight = 600;
         function gameOver() {
             clearInterval(gameInterval);
 
-            // Indique explicitement que le jeu est terminé
-            isGameOver = true;
-
             if (score > highScore) {
                 highScore = score;
                 localStorage.setItem('snakeHighScore', highScore);
@@ -326,8 +305,7 @@ let canvasHeight = 600;
         }
 
         function restart() {
-            // Utiliser le flag explicite isGameOver plutôt que de s'appuyer sur la collision
-            if (isGameOver) {
+            if (snake.checkCollision()) {
                 const startX = Math.floor(widthInBlocks / 2);
                 const startY = Math.floor(heightInBlocks / 2);
                 snake = new Snake([
@@ -338,9 +316,8 @@ let canvasHeight = 600;
                 ], "right");
                 apple = new Apple(getRandomPosition());
                 score = 0;
-                delay = 100;
+                delay = 150;
                 isPaused = false;
-                isGameOver = false;
                 updateScore();
                 startGameLoop();
             } else {
